@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Microsoft 365 Copilot 실습 프롬프트</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --ink:#10233A;
+  --ink-2:#0C1B2E;
+  --blue:#0F6CBD;
+  --blue-dk:#0C5A9E;
+  --blue-soft:#E7F0FA;
+  --violet:#8661C5;
+  --mark:#FFF1A8;
+  --mark-line:#E5BE2E;
+  --mark-ink:#5A4300;
+  --bg:#F3F5F8;
+  --card:#FFFFFF;
+  --text:#18212C;
+  --text-2:#5C6775;
+  --line:#E2E7EE;
+  --ok:#107C52;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(14,30,50,.05), 0 8px 24px rgba(14,30,50,.06);
+  --font:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic','맑은 고딕','Apple SD Gothic Neo',sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--font);
+  background:var(--bg);color:var(--text);
+  line-height:1.65;-webkit-font-smoothing:antialiased;
+  word-break:keep-all;overflow-wrap:anywhere;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+/* ── Header ───────────────────────── */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:linear-gradient(100deg,var(--ink-2) 0%,#123B63 55%,#1A4E7F 100%);
+  color:#fff;padding:0 16px;padding-top:env(safe-area-inset-top);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;height:60px;
+  box-shadow:0 2px 12px rgba(12,27,46,.2);
+}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand .badge{
+  flex-shrink:0;display:grid;place-items:center;
+  width:26px;height:26px;border-radius:7px;
+  background:linear-gradient(135deg,#2A8AF0,var(--violet));
+  font-size:12px;font-weight:800;letter-spacing:-.02em;
+}
+.brand h1{font-size:15px;font-weight:600;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hamburger{width:42px;height:42px;flex-shrink:0;display:grid;place-items:center;border-radius:10px;transition:background .15s}
+.hamburger:hover{background:rgba(255,255,255,.12)}
+.hamburger span{display:block;width:20px;height:2px;background:#fff;border-radius:2px;transition:transform .25s,opacity .2s}
+.hamburger span+span{margin-top:5px}
+body.nav-open .hamburger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+body.nav-open .hamburger span:nth-child(2){opacity:0}
+body.nav-open .hamburger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+.progress{height:3px;background:rgba(15,108,189,.14);position:sticky;top:60px;z-index:49}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--violet));transition:width .3s ease}
+
+/* ── Drawer ───────────────────────── */
+.scrim{position:fixed;inset:0;z-index:60;background:rgba(10,22,36,.45);opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s}
+body.nav-open .scrim{opacity:1;visibility:visible}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;z-index:61;
+  width:min(356px,88vw);background:#fff;
+  transform:translateX(102%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(10,22,36,.16);
+}
+body.nav-open .drawer{transform:translateX(0)}
+.drawer-head{
+  padding:18px 20px 14px;border-bottom:1px solid var(--line);
+  padding-top:calc(18px + env(safe-area-inset-top));
+  display:flex;align-items:center;justify-content:space-between;
+}
+.drawer-head strong{font-size:14px;letter-spacing:-.01em}
+.drawer-head span{font-size:12px;color:var(--text-2);display:block;font-weight:400;margin-top:2px}
+.drawer-close{font-size:22px;color:var(--text-2);width:32px;height:32px;border-radius:8px;line-height:1}
+.drawer-close:hover{background:var(--bg)}
+.nav-list{flex:1;overflow-y:auto;padding:10px 12px 28px;overscroll-behavior:contain}
+.nav-group-title{display:flex;align-items:baseline;gap:8px;padding:13px 10px 6px;font-size:12px;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.nav-group-title b{font-size:10px;background:var(--blue-soft);color:var(--blue-dk);padding:2px 7px;border-radius:20px;font-weight:700}
+.nav-group-title i{font-style:normal;font-size:10.5px;color:var(--text-2);font-weight:500;margin-left:auto;flex-shrink:0}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border-radius:10px;font-size:13.5px;transition:background .12s}
+.nav-item:hover{background:var(--bg)}
+.nav-item .idx{flex-shrink:0;width:22px;height:22px;border-radius:6px;background:var(--bg);color:var(--text-2);font-size:11px;font-weight:700;display:grid;place-items:center}
+.nav-item .cnt{margin-left:auto;flex-shrink:0;font-size:10.5px;color:var(--text-2);font-variant-numeric:tabular-nums}
+.nav-item.active{background:var(--ink);color:#fff;font-weight:600}
+.nav-item.active .idx{background:rgba(255,255,255,.2);color:#fff}
+.nav-item.active .cnt{color:rgba(255,255,255,.7)}
+
+/* ── Main ─────────────────────────── */
+main{max-width:860px;margin:0 auto;padding:26px 16px 124px}
+.crumb{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--text-2);margin-bottom:8px}
+.crumb .chip{background:var(--ink);color:#fff;padding:3px 10px;border-radius:20px;font-weight:700;font-size:11px}
+.crumb .min{background:var(--blue-soft);color:var(--blue-dk);padding:3px 9px;border-radius:20px;font-weight:600;font-size:11px}
+.sec-title{font-size:23px;font-weight:700;margin:0 0 6px;letter-spacing:-.02em;line-height:1.35}
+.sec-desc{margin:0 0 22px;color:var(--text-2);font-size:14px}
+.sec-desc b{color:var(--blue-dk);font-weight:600}
+
+/* ── Card ─────────────────────────── */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:18px;overflow:hidden}
+.card-head{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#FBFCFE,#F7F9FC)}
+.card-no{flex-shrink:0;background:var(--ink);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px}
+.card-title{flex:1;min-width:0;font-size:14px;font-weight:600;letter-spacing:-.01em}
+.card-tools{display:flex;gap:6px;flex-shrink:0}
+.btn-reset{font-size:12px;color:var(--text-2);padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:#fff;transition:.15s}
+.btn-reset:hover{color:var(--text);border-color:#C8D2DE}
+.btn-copy{font-size:12.5px;font-weight:600;color:#fff;background:var(--blue);padding:7px 14px;border-radius:8px;transition:.15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.btn-copy:hover{background:var(--blue-dk)}
+.btn-copy.done{background:var(--ok)}
+.prompt{margin:0;padding:18px 16px;font-family:var(--font);font-size:14.5px;line-height:1.9;white-space:pre-wrap}
+.card-tip{padding:10px 16px;border-top:1px dashed var(--line);background:#FCFDFE;font-size:12.5px;color:var(--text-2)}
+.card-tip b{color:var(--blue-dk);font-weight:600}
+
+/* ── 형광펜 빈칸 ──────────────────── */
+.blank{
+  display:inline-block;min-width:104px;padding:1px 8px;margin:0 1px;
+  background:var(--mark);border-bottom:2px solid var(--mark-line);
+  border-radius:4px 4px 2px 2px;font-weight:600;color:var(--mark-ink);
+  outline:none;white-space:pre-wrap;transition:background .15s,box-shadow .15s;
+}
+.blank:hover{background:#FFEA85}
+.blank:focus{background:#FFFBDC;box-shadow:0 0 0 2px rgba(229,190,46,.6)}
+.blank:empty::before{content:attr(data-hint);color:#97812C;font-weight:500;font-size:13px}
+.has-blank .card-head{background:linear-gradient(180deg,#FFFCF0,#FDF8E6)}
+
+/* ── Pager ────────────────────────── */
+.pager{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:saturate(180%) blur(12px);-webkit-backdrop-filter:saturate(180%) blur(12px);
+  border-top:1px solid var(--line);padding:10px 16px;
+  padding-bottom:calc(10px + env(safe-area-inset-bottom));
+}
+.pager-in{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.pg{flex:1;min-width:0;display:flex;align-items:center;gap:8px;padding:11px 14px;border-radius:11px;border:1px solid var(--line);background:#fff;font-size:13px;font-weight:600;transition:.15s}
+.pg:hover:not(:disabled){border-color:var(--blue);color:var(--blue-dk)}
+.pg:disabled{opacity:.35;cursor:default}
+.pg small{display:block;font-size:10.5px;font-weight:500;color:var(--text-2)}
+.pg .lbl{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pg-next{justify-content:flex-end;text-align:right}
+.pg-count{flex-shrink:0;font-size:12px;color:var(--text-2);font-variant-numeric:tabular-nums;padding:0 4px;font-weight:600}
+
+.toast{
+  position:fixed;left:50%;bottom:96px;transform:translate(-50%,14px);
+  background:var(--ink);color:#fff;padding:10px 18px;border-radius:22px;
+  font-size:13px;opacity:0;visibility:hidden;transition:.25s;z-index:70;
+  box-shadow:0 6px 20px rgba(10,22,36,.25);max-width:calc(100vw - 32px);text-align:center;
+}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+
+@media (max-width:520px){
+  .sec-title{font-size:20px}
+  .prompt{font-size:14px;padding:16px 14px}
+  .card-head{flex-wrap:wrap}
+  .card-title{flex-basis:calc(100% - 76px)}
+  .card-tools{margin-left:auto}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="badge">C</span>
+    <h1>Microsoft 365 Copilot 실습 프롬프트</h1>
+  </div>
+  <button class="hamburger" id="btnNav" aria-label="목차 열기" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+<div class="progress"><i id="progressBar"></i></div>
+
+<div class="scrim" id="scrim"></div>
+<nav class="drawer" id="drawer" aria-label="교시 및 실습 구간 목차">
+  <div class="drawer-head">
+    <div><strong>목차</strong><span>교시 · 실습 구간</span></div>
+    <button class="drawer-close" id="btnClose" aria-label="목차 닫기">&times;</button>
+  </div>
+  <div class="nav-list" id="navList"></div>
+</nav>
+
+<main>
+  <div class="crumb" id="crumb"></div>
+  <h2 class="sec-title" id="secTitle"></h2>
+  <p class="sec-desc" id="secDesc"></p>
+  <div id="cards"></div>
+</main>
+
+<div class="pager">
+  <div class="pager-in">
+    <button class="pg" id="btnPrev"><span>‹</span><span class="lbl"><small>이전</small><span id="prevLbl"></span></span></button>
+    <span class="pg-count" id="pgCount"></span>
+    <button class="pg pg-next" id="btnNext"><span class="lbl"><small>다음</small><span id="nextLbl"></span></span><span>›</span></button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="prompt-data.js"></script>
+<script>
+const STORE_KEY = 'm365_blanks_v1';
+const NAV_KEY   = 'm365_pos_v1';
+
+// 교시 → 구간을 평면 리스트로 펼침 (이전/다음 이동용)
+const FLAT = [];
+COURSE.forEach((p, pi) => {
+  p.sections.forEach((s, si) => {
+    FLAT.push({ pi, si, period: p.period, periodTitle: p.title, time: p.time, ...s });
+  });
+});
+
+const $ = id => document.getElementById(id);
+const store = {
+  read(){ try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; } },
+  write(o){ try { localStorage.setItem(STORE_KEY, JSON.stringify(o)); } catch {} }
+};
+let current = 0;
+
+/* ── 목차 ─────────────────────────── */
+function buildNav(){
+  const wrap = $('navList');
+  wrap.innerHTML = '';
+  let n = 0;
+  COURSE.forEach(p => {
+    const g = document.createElement('div');
+    const h = document.createElement('div');
+    h.className = 'nav-group-title';
+    h.innerHTML = '<b>' + p.period + '</b><span>' + p.title + '</span><i>' + (p.time || '') + '</i>';
+    g.appendChild(h);
+    p.sections.forEach(s => {
+      const i = n++;
+      const b = document.createElement('button');
+      b.className = 'nav-item';
+      b.dataset.idx = i;
+      b.innerHTML = '<span class="idx">' + (i + 1) + '</span><span>' + s.title +
+                    '</span><span class="cnt">' + s.prompts.length + '개</span>';
+      b.addEventListener('click', () => { go(i); closeNav(); });
+      g.appendChild(b);
+    });
+    wrap.appendChild(g);
+  });
+}
+
+/* ── 프롬프트 본문 (형광펜 빈칸 포함) ── */
+function renderPrompt(text, key){
+  const pre = document.createElement('pre');
+  pre.className = 'prompt';
+  const saved = store.read()[key] || {};
+  let count = 0;
+  text.split(/(\{\{[^}]*\}\})/g).forEach(part => {
+    if (!part) return;
+    const m = part.match(/^\{\{([^}]*)\}\}$/);
+    if (m) {
+      const [hint, def] = m[1].split('|');
+      const span = document.createElement('span');
+      span.className = 'blank';
+      span.contentEditable = 'true';
+      span.spellcheck = false;
+      span.dataset.hint = hint.trim();
+      span.dataset.def = (def || '').trim();
+      span.setAttribute('role', 'textbox');
+      span.setAttribute('aria-label', hint.trim() + ' 입력');
+      const v = Object.prototype.hasOwnProperty.call(saved, hint.trim())
+        ? saved[hint.trim()] : (def || '').trim();
+      if (v) span.textContent = v;
+      count++;
+      pre.appendChild(span);
+    } else {
+      pre.appendChild(document.createTextNode(part));
+    }
+  });
+  pre.dataset.key = key;
+  pre.dataset.blanks = count;
+  return pre;
+}
+
+/* ── 복사용 순수 텍스트 ───────────── */
+function plainText(node){
+  if (node.nodeType === Node.TEXT_NODE) return node.nodeValue;
+  if (node.nodeName === 'BR') return '';
+  if (node.classList && node.classList.contains('blank')) {
+    const v = node.textContent.replace(/\s+/g, ' ').trim();
+    return v || ('[' + node.dataset.hint + ']');
+  }
+  return Array.from(node.childNodes).map(plainText).join('');
+}
+
+/* ── 렌더 ─────────────────────────── */
+function render(){
+  const s = FLAT[current];
+
+  $('crumb').innerHTML = '<span class="chip">' + s.period + '</span>' +
+                         '<span>' + s.periodTitle + '</span>' +
+                         (s.time ? '<span class="min">' + s.time + '</span>' : '');
+  $('secTitle').textContent = s.title;
+  $('secDesc').innerHTML = s.desc || '';
+
+  const box = $('cards');
+  box.innerHTML = '';
+  s.prompts.forEach((p, pi) => {
+    const key = 'p' + s.pi + 's' + s.si + 'q' + pi;
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const head = document.createElement('div');
+    head.className = 'card-head';
+    head.innerHTML = '<span class="card-no">프롬프트 ' + (pi + 1) + '</span>' +
+                     '<span class="card-title">' + p.title + '</span>';
+
+    const tools = document.createElement('div');
+    tools.className = 'card-tools';
+    const body = renderPrompt(p.text, key);
+
+    if (Number(body.dataset.blanks) > 0) {
+      card.classList.add('has-blank');
+      const rst = document.createElement('button');
+      rst.className = 'btn-reset';
+      rst.textContent = '빈칸 초기화';
+      rst.addEventListener('click', () => {
+        body.querySelectorAll('.blank').forEach(b => {
+          b.textContent = b.dataset.def || '';
+          if (!b.textContent) b.innerHTML = '';
+        });
+        saveBlanks(body);
+        toast('빈칸을 원래대로 돌렸습니다');
+      });
+      tools.appendChild(rst);
+    }
+
+    const cp = document.createElement('button');
+    cp.className = 'btn-copy';
+    cp.innerHTML = '<span>⧉</span> 복사';
+    cp.addEventListener('click', () => copy(plainText(body), cp, body));
+    tools.appendChild(cp);
+    head.appendChild(tools);
+
+    card.appendChild(head);
+    card.appendChild(body);
+
+    if (p.tip) {
+      const tip = document.createElement('div');
+      tip.className = 'card-tip';
+      tip.innerHTML = '💡 ' + p.tip;
+      card.appendChild(tip);
+    }
+    box.appendChild(card);
+  });
+
+  const prev = FLAT[current - 1], next = FLAT[current + 1];
+  $('btnPrev').disabled = !prev;
+  $('btnNext').disabled = !next;
+  $('prevLbl').textContent = prev ? prev.period + ' · ' + shortTitle(prev.title) : '처음';
+  $('nextLbl').textContent = next ? next.period + ' · ' + shortTitle(next.title) : '마지막';
+  $('pgCount').textContent = (current + 1) + ' / ' + FLAT.length;
+  $('progressBar').style.width = ((current + 1) / FLAT.length * 100) + '%';
+
+  document.querySelectorAll('.nav-item').forEach(b => {
+    b.classList.toggle('active', Number(b.dataset.idx) === current);
+  });
+
+  try { localStorage.setItem(NAV_KEY, current); } catch {}
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function shortTitle(t){ return t.split('.')[0]; }
+
+/* ── 빈칸 저장 (힌트 기준, 같은 힌트는 동기화) ── */
+function saveBlanks(pre){
+  const all = store.read();
+  const obj = {};
+  pre.querySelectorAll('.blank').forEach(b => {
+    obj[b.dataset.hint] = b.textContent.replace(/\s+/g, ' ').trim();
+  });
+  all[pre.dataset.key] = obj;
+  store.write(all);
+}
+function syncBlanks(pre, src){
+  const hint = src.dataset.hint;
+  const val = src.textContent;
+  pre.querySelectorAll('.blank').forEach(b => {
+    if (b !== src && b.dataset.hint === hint && b.textContent !== val) {
+      b.textContent = val;
+      if (!val.trim()) b.innerHTML = '';
+    }
+  });
+}
+
+/* ── 복사 ─────────────────────────── */
+async function copy(text, btn, pre){
+  let ok = false;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      ok = true;
+    }
+  } catch {}
+  if (!ok) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { ok = document.execCommand('copy'); } catch {}
+    ta.remove();
+  }
+  if (ok) {
+    const html = btn.innerHTML;
+    btn.innerHTML = '<span>✓</span> 복사됨';
+    btn.classList.add('done');
+    setTimeout(() => { btn.innerHTML = html; btn.classList.remove('done'); }, 1500);
+    toast('프롬프트를 복사했습니다. Copilot에 붙여넣으세요');
+  } else if (pre) {
+    const r = document.createRange();
+    r.selectNodeContents(pre);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
+    toast('본문을 선택했습니다. Ctrl+C 를 눌러 복사하세요');
+  }
+}
+
+let toastTimer;
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1900);
+}
+
+/* ── 이동 ─────────────────────────── */
+function go(i){ current = Math.max(0, Math.min(FLAT.length - 1, i)); render(); }
+function openNav(){
+  document.body.classList.add('nav-open');
+  $('btnNav').setAttribute('aria-expanded', 'true');
+  const a = document.querySelector('.nav-item.active');
+  if (a) a.scrollIntoView({ block: 'center' });
+}
+function closeNav(){ document.body.classList.remove('nav-open'); $('btnNav').setAttribute('aria-expanded', 'false'); }
+
+/* ── 이벤트 ───────────────────────── */
+$('btnNav').addEventListener('click', () => document.body.classList.contains('nav-open') ? closeNav() : openNav());
+$('btnClose').addEventListener('click', closeNav);
+$('scrim').addEventListener('click', closeNav);
+$('btnPrev').addEventListener('click', () => go(current - 1));
+$('btnNext').addEventListener('click', () => go(current + 1));
+
+const cards = $('cards');
+cards.addEventListener('input', e => {
+  const b = e.target.closest('.blank');
+  if (!b) return;
+  if (!b.textContent.trim()) b.innerHTML = '';
+  const pre = b.closest('.prompt');
+  syncBlanks(pre, b);
+  saveBlanks(pre);
+});
+cards.addEventListener('keydown', e => {
+  const b = e.target.closest('.blank');
+  if (!b) return;
+  if (e.key === 'Enter') { e.preventDefault(); b.blur(); }
+});
+cards.addEventListener('paste', e => {
+  const b = e.target.closest('.blank');
+  if (!b) return;
+  e.preventDefault();
+  const t = (e.clipboardData || window.clipboardData).getData('text').replace(/\s+/g, ' ').trim();
+  document.execCommand('insertText', false, t);
+});
+
+document.addEventListener('keydown', e => {
+  if (e.target.closest('.blank') || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === 'ArrowLeft')  go(current - 1);
+  if (e.key === 'ArrowRight') go(current + 1);
+  if (e.key === 'Escape')     closeNav();
+});
+
+/* ── 시작 ─────────────────────────── */
+buildNav();
+const saved = Number(localStorage.getItem(NAV_KEY));
+go(Number.isInteger(saved) && saved >= 0 && saved < FLAT.length ? saved : 0);
+</script>
+</body>
+</html>
